@@ -1,31 +1,38 @@
-import os
+just fix this code except the funny triggers it will react with 👻😭 on every message 
+
+ - import os
 import random
 import aiohttp
 import asyncio
-from dotenv import load_dotenv
-
-# Load environment variables FIRST
-load_dotenv()
 
 class UniversalSelfReactBot:
     def __init__(self):
-        self.token = os.getenv('DISCORD_TOKEN')  # Get token from .env
+        # Get token directly from GitHub Secrets
+        self.token = os.environ.get('DISCORD_TOKEN')
         if not self.token:
-            raise ValueError("No DISCORD_TOKEN found in .env file")
+            raise ValueError(
+                "No DISCORD_TOKEN found in environment variables!\n"
+                "Please add your token to GitHub Secrets:\n"
+                "1. Go to Repository Settings → Secrets → Actions\n"
+                "2. Add new secret named 'DISCORD_TOKEN'\n"
+                "3. Paste your bot token"
+            )
+            
         self.base_emojis = ['😭', '👻']
         self.funny_emojis = ['😭', '☠️', '⁉️']
-        self.funny_triggers = ['lol', 'lmao', 'lmfao', 'funny', 'haha', '😂', '😹', '💀', '.']
+        self.funny_triggers = ['lol', 'lmao', 'lmfao', 'funny', 'haha', '😂', '😹', '💀', '..']
         self.session = None
         self.semaphore = asyncio.Semaphore(5)
         self.last_messages = set()
 
     async def start(self):
         self.session = aiohttp.ClientSession()
-        print("Universal Self-React Bot started - Monitoring all messages")
+        print("🟢 Bot started (Token from GitHub Secrets)")
         await self.listen_to_messages()
 
     async def close(self):
-        await self.session.close()
+        if self.session:
+            await self.session.close()
 
     def is_funny(self, content):
         content_lower = content.lower()
@@ -106,20 +113,19 @@ class UniversalSelfReactBot:
 
 async def main():
     try:
+        print("🔵 Starting Bot (GitHub Secrets Version)...")
         bot = UniversalSelfReactBot()
         await bot.start()
     except ValueError as e:
-        print(f"Error: {e}")
-        print("Please create a .env file with DISCORD_TOKEN=your_token_here")
+        print(f"🔴 Error: {e}")
     except KeyboardInterrupt:
-        print("\nBot stopped by user")
+        print("\n🟠 Bot stopped by user")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"🔴 Unexpected error: {type(e).__name__}")
     finally:
         if 'bot' in locals():
             await bot.close()
+        print("🔴 Bot shutdown complete")
 
 if __name__ == "__main__":
-    print("Starting Universal Self-React Bot...")
-    print("Make sure you have a .env file with your token!")
     asyncio.run(main())
