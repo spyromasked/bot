@@ -1,0 +1,43 @@
+name: 24/7 Discord Bot Runner
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Restarts every 6 hours
+  workflow_dispatch:        # Allow manual runs
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # Install dependencies
+      - name: Install requirements
+        run: |
+          pip install aiohttp
+
+      # Run the bot (with auto-restart logic)
+      - name: Start Bot
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        run: |
+          # Start the bot in background
+          nohup python main.py > bot.log 2>&1 &
+          echo $! > bot.pid
+          
+          # Wait 5h 50m before graceful shutdown
+          sleep 350m
+          
+          # Kill process before next scheduled restart
+          kill $(cat bot.pid) || true
+          sleep 5
+          [ -f bot.pid ] && rm bot.pid
